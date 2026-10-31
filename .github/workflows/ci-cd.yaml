@@ -16,30 +16,24 @@ permissions:
   contents: read
 
 jobs:
-
-  # CI: Build and validate the application
   build:
     name: Build and Test
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Download repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js for JavaScript validation
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      # Step 3: Check JavaScript syntax
       - name: Validate JavaScript
         run: |
           node --check JS/main.js
           node --check JS/time.js
 
-      # Step 4: Verify required website files
       - name: Validate Project Files
         run: |
           test -f index.html
@@ -50,7 +44,6 @@ jobs:
           test -d assets
           echo "All required files exist!"
 
-      # Step 5: Prepare static website build
       - name: Build Website
         run: |
           mkdir -p _site
@@ -58,13 +51,12 @@ jobs:
           cp -r CSS JS assets _site/
           echo "Website build completed!"
 
-      # Step 6: Upload website for deployment
       - name: Upload Website Artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          name: todolist-site
           path: _site
 
-  # CD: Deploy website to GitHub Pages
   deploy:
     name: Deploy to GitHub Pages
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -80,7 +72,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      # Deploy the uploaded website
       - name: Deploy Website
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: todolist-site
